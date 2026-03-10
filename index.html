@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Just Pick Linux Already</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rosewater: #f5e0dc;
+    --flamingo:  #f2cdcd;
+    --pink:      #f5c2e7;
+    --mauve:     #cba6f7;
+    --red:       #f38ba8;
+    --maroon:    #eba0ac;
+    --peach:     #fab387;
+    --yellow:    #f9e2af;
+    --green:     #a6e3a1;
+    --teal:      #94e2d5;
+    --sky:       #89dceb;
+    --sapphire:  #74c7ec;
+    --blue:      #89b4fa;
+    --lavender:  #b4befe;
+    --text:      #cdd6f4;
+    --subtext1:  #bac2de;
+    --subtext0:  #a6adc8;
+    --overlay2:  #9399b2;
+    --overlay1:  #7f849c;
+    --overlay0:  #6c7086;
+    --surface2:  #585b70;
+    --surface1:  #45475a;
+    --surface0:  #313244;
+    --base:      #1e1e2e;
+    --mantle:    #181825;
+    --crust:     #11111b;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--base);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    overflow-x: hidden;
+  }
+
+  .bg-glow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 10%, rgba(203,166,247,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 35% at 80% 90%, rgba(137,180,250,0.06) 0%, transparent 70%);
+  }
+
+  .grain {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 680px;
+    gap: 0;
+  }
+
+  .eyebrow {
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--mauve);
+    margin-bottom: 0.6rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.1s forwards;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.8rem, 13vw, 7.5rem);
+    line-height: 0.9;
+    text-align: center;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+
+  h1 span { color: var(--mauve); }
+
+  .sub {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--overlay1);
+    text-align: center;
+    max-width: 380px;
+    line-height: 2;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.35s forwards;
+  }
+
+  .card-area {
+    margin-top: 2.8rem;
+    width: 100%;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.5s forwards;
+  }
+
+  .result-card {
+    width: 100%;
+    background: var(--mantle);
+    border: 1px solid var(--surface1);
+    border-radius: 20px;
+    padding: 2.2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--mauve), var(--blue), var(--teal));
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .result-card.has-result { border-color: var(--surface2); }
+  .result-card.has-result::before { opacity: 1; }
+
+  .card-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--overlay0);
+  }
+
+  .card-distro {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.4rem, 8vw, 4rem);
+    color: var(--mauve);
+    line-height: 1;
+    min-height: 1em;
+    transition: color 0.2s;
+  }
+
+  .card-de {
+    font-size: 0.85rem;
+    color: var(--blue);
+    letter-spacing: 0.04em;
+    min-height: 1.2em;
+  }
+
+  .card-de span {
+    background: var(--surface0);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+  }
+
+  .card-empty {
+    font-size: 0.8rem;
+    color: var(--overlay0);
+    font-style: italic;
+  }
+
+  .card-note {
+    margin-top: 0.6rem;
+    font-size: 0.72rem;
+    color: var(--overlay1);
+    line-height: 1.6;
+    min-height: 2.4em;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.02em;
+    word-break: break-word;
+  }
+
+  .card-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    font-size: 0.72rem;
+    color: var(--teal);
+    text-decoration: none;
+    border: 1px solid var(--teal);
+    border-radius: 8px;
+    padding: 0.4rem 0.85rem;
+    width: fit-content;
+    opacity: 0;
+    pointer-events: none;
+    transition: background 0.15s, color 0.15s, opacity 0.3s, transform 0.15s;
+    letter-spacing: 0.04em;
+  }
+
+  .card-download.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .card-download:hover {
+    background: rgba(148, 226, 213, 0.1);
+    transform: translateX(2px);
+  }
+
+  .card-download-arrow {
+    font-size: 0.85rem;
+    line-height: 1;
+  }
+
+  .shuffle-indicator {
+    position: absolute;
+    bottom: 1.2rem;
+    right: 1.5rem;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .shuffle-indicator.spinning { opacity: 1; }
+
+  .dot-spin {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--mauve);
+    animation: dotBounce 0.6s ease-in-out infinite;
+  }
+  .dot-spin:nth-child(2) { animation-delay: 0.1s; background: var(--blue); }
+  .dot-spin:nth-child(3) { animation-delay: 0.2s; background: var(--teal); }
+
+  @keyframes dotBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  .btn-row {
+    margin-top: 1.8rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.65s forwards;
+  }
+
+  .btn-main {
+    background: var(--mauve);
+    color: var(--crust);
+    border: none;
+    padding: 0.9rem 2.2rem;
+    border-radius: 12px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.25rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+    box-shadow: 0 0 0 0 rgba(203,166,247,0);
+  }
+
+  .btn-main:hover {
+    background: var(--lavender);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(203,166,247,0.2);
+  }
+
+  .btn-main:active { transform: translateY(0) scale(0.97); }
+
+  .btn-main.rolling {
+    animation: btnPulse 0.15s ease-in-out infinite alternate;
+  }
+
+  @keyframes btnPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.02); }
+  }
+
+  .btn-copy {
+    background: var(--surface0);
+    color: var(--subtext1);
+    border: 1px solid var(--surface2);
+    padding: 0.9rem 1.4rem;
+    border-radius: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity 0.2s, width 0.2s, padding 0.2s;
+  }
+
+  .btn-copy.show {
+    opacity: 1;
+    pointer-events: auto;
+    width: auto;
+    padding: 0.9rem 1.4rem;
+  }
+
+  .btn-copy:hover { background: var(--surface1); color: var(--text); transform: translateY(-2px); }
+  .btn-copy:active { transform: scale(0.97); }
+
+  .history {
+    margin-top: 2.5rem;
+    width: 100%;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.8s forwards;
+  }
+
+  .history-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--overlay0);
+    margin-bottom: 0.8rem;
+  }
+
+  .history-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .history-chip {
+    background: var(--surface0);
+    border: 1px solid var(--surface1);
+    border-radius: 100px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.7rem;
+    color: var(--subtext0);
+    animation: chipIn 0.25s ease-out both;
+  }
+
+  @keyframes chipIn {
+    from { opacity: 0; transform: scale(0.85); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+
+  .footer-note {
+    margin-top: 3rem;
+    font-size: 0.65rem;
+    color: var(--overlay0);
+    letter-spacing: 0.06em;
+    text-align: center;
+    opacity: 0;
+    animation: fadeUp 0.6s 1s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .flash {
+    animation: flashCard 0.35s ease-out;
+  }
+
+  @keyframes flashCard {
+    0%   { box-shadow: 0 0 0 0 rgba(203,166,247,0); }
+    40%  { box-shadow: 0 0 40px 8px rgba(203,166,247,0.15); }
+    100% { box-shadow: 0 0 0 0 rgba(203,166,247,0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+<div class="grain"></div>
+
+<div class="wrap">
+  <div class="eyebrow">Stop overthinking it</div>
+  <h1>JUST PICK<br><span>LINUX</span><br>ALREADY</h1>
+  <p class="sub">Let the dice decide your next OS.<br>Commit.<br>Install.</p>
+
+  <div class="card-area">
+    <div class="result-card" id="card">
+      <div class="card-label">Your setup</div>
+      <div class="card-distro" id="out-distro"><span class="card-empty">hit the button...</span></div>
+      <div class="card-de" id="out-de"></div>
+      <div class="card-note" id="out-note"></div>
+      <a class="card-download" id="out-download" href="#" target="_blank" rel="noopener noreferrer">
+        <span class="card-download-arrow">↗</span> Go to official site
+      </a>
+      <div class="shuffle-indicator" id="spinner">
+        <div class="dot-spin"></div>
+        <div class="dot-spin"></div>
+        <div class="dot-spin"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-main" id="roll-btn" onclick="roll()">Roll the Dice</button>
+    <button class="btn-copy" id="copy-btn" onclick="copyResult()">Copy</button>
+  </div>
+
+  <div class="history" id="history-wrap" style="display:none">
+    <div class="history-label">Previous rolls</div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+  <div class="footer-note">12 distros · 12 desktop environments · 144 possible combos</div>
+</div>
+
+<script>
+  const distros = [
+    ["Ubuntu",             "Solid, stable, massive community. You'll find a fix for everything."],
+    ["Fedora",             "Cutting-edge but sane. Red Hat's playground, your daily driver."],
+    ["Arch Linux",         "You'll learn Linux or you'll learn patience. Probably both."],
+    ["Bazzite",            "Gaming-focused and immutable. Steam out of the box, no babysitting."],
+    ["EndeavourOS",        "Arch, but someone held the door open for you."],
+    ["CachyOS",            "Arch with performance patches. Benchmarks go brr."],
+    ["Zorin OS",           "Familiar layout, zero guilt. Windows refugees welcome."],
+    ["Nobara Project",     "Fedora tuned for gaming. Glorious and opinionated."],
+    ["openSUSE Tumbleweed","Rolling release, rock solid. The quiet overachiever."],
+    ["Debian",             "The grandmother of distros. Unshakeable. Unsexy. Unbeatable."],
+    ["Ultramarine Linux",  "Fedora's chill sibling. Flathub on, judgment off."],
+    ["Garuda Linux",       "Arch with a sports car paint job and actual tools pre-installed."],
+  ];
+
+  const des = [
+    ["Default",    "Whatever ships with it. Embrace the vision."],
+    ["KDE Plasma", "Infinitely tweakable. A tinkerer's paradise."],
+    ["GNOME",      "Opinionated and smooth. Touch-friendly, keyboard-friendly."],
+    ["XFCE",       "Lightweight classic. Still blazing fast in 2025."],
+    ["COSMIC",     "System76's new kid. Rust-powered, future-forward."],
+    ["Cinnamon",   "Traditional desktop done right. Mint's finest export."],
+    ["Hyprland",   "Wayland tiling beauty. Your screenshots will be envied."],
+    ["MATE",       "GNOME 2 lives on. Clean, fast, no drama."],
+    ["Budgie",     "Polished panel-based DE. Simple never looked this good."],
+    ["LXQt",       "Qt-based and featherweight. Netbook-era hardware rejoices."],
+    ["Sway",       "i3 but Wayland. Keyboard-driven productivity beast."],
+    ["i3wm",          "Minimal tiling WM. You'll write a blog post about it."],
+    ["Enlightenment", "Eye candy from 2000 that still turns heads. Wildly unique."],
+  ];
+
+  let current = null;
+  let history = [];
+  let rolling = false;
+
+  function pickDistro() { return distros[Math.floor(Math.random() * distros.length)]; }
+
+  function pickDE() {
+    // Enlightenment: 1% chance. Remaining 99% split evenly among the other 12.
+    if (Math.random() < 0.01) return des[des.length - 1];
+    const pool = des.slice(0, des.length - 1);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  const chars = 'abcdefghijklmnopqrstuvwxyz.,!?-_/\\|#@%&*';
+
+  function randChar() { return chars[Math.floor(Math.random() * chars.length)]; }
+
+  function scrambleSettle(el, finalText) {
+    const len = finalText.length;
+    let frame = 0;
+    const totalFrames = 18;
+    // Each character resolves at a staggered frame
+    const resolveAt = Array.from({length: len}, (_, i) =>
+      Math.floor((i / len) * totalFrames * 0.7) + Math.floor(Math.random() * 4)
+    );
+    const iv = setInterval(() => {
+      let display = '';
+      for (let i = 0; i < len; i++) {
+        if (finalText[i] === ' ') { display += ' '; continue; }
+        display += frame >= resolveAt[i] ? finalText[i] : randChar();
+      }
+      el.textContent = display;
+      frame++;
+      if (frame > totalFrames) { el.textContent = finalText; clearInterval(iv); }
+    }, 40);
+  }
+
+  const distroUrls = {
+    "Ubuntu":              "https://ubuntu.com",
+    "Fedora":              "https://fedoraproject.org",
+    "Arch Linux":          "https://archlinux.org",
+    "Bazzite":             "https://bazzite.gg",
+    "EndeavourOS":         "https://endeavouros.com",
+    "CachyOS":             "https://cachyos.org",
+    "Zorin OS":            "https://zorin.com/os",
+    "Nobara Project":      "https://nobaraproject.org",
+    "openSUSE Tumbleweed": "https://www.opensuse.org",
+    "Debian":              "https://www.debian.org",
+    "Ultramarine Linux":   "https://ultramarine-linux.org",
+    "Garuda Linux":        "https://garudalinux.org",
+  };
+
+  function applyResult(finalDistro, finalDE) {
+    const distroEl = document.getElementById('out-distro');
+    const deEl = document.getElementById('out-de');
+    const noteEl = document.getElementById('out-note');
+    current = { distro: finalDistro[0], de: finalDE[0], distroNote: finalDistro[1], deNote: finalDE[1] };
+    distroEl.textContent = finalDistro[0];
+    deEl.innerHTML = `<span>+ ${finalDE[0]}</span>`;
+    const finalNote = `${finalDistro[1]} ${finalDE[1]}`;
+    // seed with random chars same length before settling
+    noteEl.textContent = Array.from({length: finalNote.length}, (_, i) =>
+      finalNote[i] === ' ' ? ' ' : randChar()
+    ).join('');
+    scrambleSettle(noteEl, finalNote);
+    const card = document.getElementById('card');
+    card.classList.add('has-result', 'flash');
+    setTimeout(() => card.classList.remove('flash'), 400);
+    document.getElementById('copy-btn').classList.add('show');
+    const dl = document.getElementById('out-download');
+    dl.href = distroUrls[finalDistro[0]] || '#';
+    dl.classList.add('show');
+  }
+
+  function roll() {
+    if (rolling) return;
+    rolling = true;
+
+    const btn = document.getElementById('roll-btn');
+    const spinner = document.getElementById('spinner');
+    btn.classList.add('rolling');
+    btn.textContent = 'Deciding...';
+    spinner.classList.add('spinning');
+    document.getElementById('out-download').classList.remove('show');
+
+    const distroEl = document.getElementById('out-distro');
+    const deEl = document.getElementById('out-de');
+    const noteEl = document.getElementById('out-note');
+
+    let ticks = 0;
+    const maxTicks = 14;
+    const noteLen = 60;
+    const interval = setInterval(() => {
+      distroEl.textContent = pickDistro()[0];
+      deEl.innerHTML = `<span>+ ${pickDE()[0]}</span>`;
+      noteEl.textContent = Array.from({length: noteLen}, () => Math.random() < 0.15 ? ' ' : randChar()).join('');
+      ticks++;
+      if (ticks >= maxTicks) {
+        clearInterval(interval);
+        applyResult(pickDistro(), pickDE());
+        addHistory(current.distro, current.de);
+        spinner.classList.remove('spinning');
+        btn.classList.remove('rolling');
+        btn.textContent = 'Roll Again';
+        rolling = false;
+      }
+    }, 60);
+  }
+
+  function addHistory(distro, de) {
+    history.unshift(`${distro} + ${de}`);
+    if (history.length > 7) history.pop();
+    const wrap = document.getElementById('history-wrap');
+    const list = document.getElementById('history-list');
+    wrap.style.display = 'block';
+    list.innerHTML = '';
+    history.forEach((item) => {
+      const chip = document.createElement('div');
+      chip.className = 'history-chip';
+      chip.textContent = item;
+      list.appendChild(chip);
+    });
+  }
+
+  function copyResult() {
+    if (!current) return;
+    const text = `${current.distro} + ${current.de}`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copy-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+
+</script>
+</body>
+</html>
